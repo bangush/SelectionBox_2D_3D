@@ -14,11 +14,15 @@ Manages A SelectionBox UI To Select 3D Objects On Screen
 
 ## Usage
 1. Click and Drag over the screen to create an area to select all objects within the area
+# ![SelectionBoxSelectArea](https://user-images.githubusercontent.com/5699978/110730119-de1c5b80-825a-11eb-9b24-589c032d4567.gif)
 2. Click to select single objects in 3D Scene
+# ![SelectionBoxSelectPoint](https://user-images.githubusercontent.com/5699978/110730125-dfe61f00-825a-11eb-9595-4bce90882b2b.gif)
 
 ## Implementation
 1. Set a list of selectable objects using SetSelectableObjects(list)
 2. Assign SelectionBoxUI and SelectionBoxArea
+
+
 3. Use StartSelectionBox(),UpdateSelectionBox() and ReleaseSelectionBox()
  
 ## License
