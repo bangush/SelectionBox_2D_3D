@@ -4,6 +4,7 @@ Manages A SelectionBox UI To Select 3D Objects On Screen
 ## Features
 - Restrict SelectionBox within a choosen Rect area
 - Works in any Screen Resoulution
+- Works in any Canvas Rendering Mode - Overlay,Camera or WorldSpace
 - Able to select single objects on cursor position
 
 ## Additional-Features
