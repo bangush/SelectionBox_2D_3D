@@ -12,7 +12,7 @@ using UnityEngine;
 public class SelectionBox_2D_3D : MonoBehaviour
 {
     [Header("Managed UI")]
-    [SerializeField] RectTransform selectionBoxBoundRect; //Restrict SelectionBox Within the Rect Area
+    [SerializeField] RectTransform selectionBoxBoundRect; // Restrict SelectionBox Within the Rect Area
     [SerializeField] GameObject selectionBox2DGO; // the 2d selectionBox GO
 
     [Header("Managed Scene")]
@@ -50,6 +50,7 @@ public class SelectionBox_2D_3D : MonoBehaviour
     void Awake()
     {
         selectionBoxRT = selectionBox2DGO.GetComponent<RectTransform>();
+        //selectionBox2DGO.transform.SetParent(selectionBoxRT.transform);
 
         ResetSelectionBox();
     }
@@ -65,13 +66,20 @@ public class SelectionBox_2D_3D : MonoBehaviour
                 // Use a Fustrum (5 Planes) projected from camera to select Objects
                 if (selectionBoxSizeNotZero && newSelectionBoxSize)
                 {
-                    // Get Screen Position of selectionBox Corner's
+                    //Obtain the world pos corners of the Selection Box
                     Vector3[] corners = new Vector3[4];
                     selectionBoxRT.GetWorldCorners(corners);//bl,tl,tr,br
                     Vector3 bl = corners[0];
                     Vector3 tl = corners[1];
                     Vector3 tr = corners[2];
                     Vector3 br = corners[3];
+
+                    //convert the position to screen point
+                    //when using canvas screenspace - overlay - world pos is alraedy equals to screen point, so this conversion does nothing
+                    bl = RectTransformUtility.WorldToScreenPoint(GetScreenPointCamera(selectionBoxBoundRect), bl);
+                    tl = RectTransformUtility.WorldToScreenPoint(GetScreenPointCamera(selectionBoxBoundRect), tl);
+                    tr = RectTransformUtility.WorldToScreenPoint(GetScreenPointCamera(selectionBoxBoundRect), tr);
+                    br = RectTransformUtility.WorldToScreenPoint(GetScreenPointCamera(selectionBoxBoundRect), br);
 
                     //C onstruct ray from the camera using selectionBox Corner Pos
                     Ray bottomLeftRay = cam.ScreenPointToRay(bl);
@@ -145,6 +153,41 @@ public class SelectionBox_2D_3D : MonoBehaviour
         }
     }
 
+    Camera GetScreenPointCamera(RectTransform rectTransform)
+    {
+        Canvas rootCanvas = null;
+        Transform rectCheck = rectTransform;
+
+        //Check Each Parent Canvas up the heirachy to try and find the root canvas
+        do
+        {
+            rootCanvas = rectCheck.GetComponent<Canvas>();
+
+            if (rootCanvas && !rootCanvas.isRootCanvas)
+            {
+                rootCanvas = null;
+            }
+
+            //Then we promote the rect we're checking to it's parent.
+            rectCheck = rectTransform.parent;
+
+        } while (rootCanvas == null);
+
+        //Once we have found the root Canvas, we return a camera depending on it's render mode.
+        if(rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay)
+        {
+            return null;
+        }
+        else if(rootCanvas.renderMode == RenderMode.ScreenSpaceCamera)
+        {
+            return rootCanvas.worldCamera ? rootCanvas.worldCamera : Camera.main;
+        }
+        else// if (rootCanvas.renderMode == RenderMode.WorldSpace)
+        {
+            return Camera.main;
+        }
+    }
+
     /// <summary>
     /// Set the List of Objects that user can select which ideally would only be objects visible by camera
     /// </summary>
@@ -162,7 +205,7 @@ public class SelectionBox_2D_3D : MonoBehaviour
         {
             //Obtain mouseposition relative to the selectionBoxBoundRect
             Vector2 uiMousePostion;
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(selectionBoxBoundRect, startMousePos, null, out uiMousePostion);
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(selectionBoxBoundRect, startMousePos, GetScreenPointCamera(selectionBoxBoundRect), out uiMousePostion);
 
             startMousePos_UI = uiMousePostion;
 
@@ -183,7 +226,7 @@ public class SelectionBox_2D_3D : MonoBehaviour
 
         //Obtain mouseposition relative to the selectionBoxBoundRect
         Vector2 uiMousePosition;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(selectionBoxBoundRect, updatedMousePos, null, out uiMousePosition);
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(selectionBoxBoundRect, updatedMousePos, GetScreenPointCamera(selectionBoxBoundRect), out uiMousePosition);
 
         //Calculate new SelectionBox Position And Size - using Start and End mouse position 
         Vector2 endMousePos_UI = uiMousePosition;
@@ -284,12 +327,20 @@ public class SelectionBox_2D_3D : MonoBehaviour
             {
                 Gizmos.color = Color.red;
 
+                //Obtain the world pos corners of the Selection Box
                 Vector3[] corners = new Vector3[4];
                 selectionBoxRT.GetWorldCorners(corners);//bl,tl,tr,br
                 Vector3 bl = corners[0];
                 Vector3 tl = corners[1];
                 Vector3 tr = corners[2];
                 Vector3 br = corners[3];
+
+                //convert the position to screen point
+                //when using canvas screenspace - overlay - world pos is alraedy equals to screen point, so this conversion does nothing
+                bl = RectTransformUtility.WorldToScreenPoint(GetScreenPointCamera(selectionBoxBoundRect), bl);
+                tl = RectTransformUtility.WorldToScreenPoint(GetScreenPointCamera(selectionBoxBoundRect), tl);
+                tr = RectTransformUtility.WorldToScreenPoint(GetScreenPointCamera(selectionBoxBoundRect), tr);
+                br = RectTransformUtility.WorldToScreenPoint(GetScreenPointCamera(selectionBoxBoundRect), br);
 
                 Ray bottomLeft = cam.ScreenPointToRay(bl);
                 Ray topLeft = cam.ScreenPointToRay(tl);
