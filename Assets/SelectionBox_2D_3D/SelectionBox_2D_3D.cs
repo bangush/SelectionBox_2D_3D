@@ -62,7 +62,7 @@ public class SelectionBox_2D_3D : MonoBehaviour
             {
                 bool selectionBoxSizeNotZero = (selectionBoxRT.rect.width != 0 && selectionBoxRT.rect.height != 0);
                 bool newSelectionBoxSize = previousSelectionBoxRTSize.x != selectionBoxRT.rect.width || previousSelectionBoxRTSize.y != selectionBoxRT.rect.height;
-                
+
                 // Use a Fustrum (5 Planes) projected from camera to select Objects
                 if (selectionBoxSizeNotZero && newSelectionBoxSize)
                 {
@@ -76,15 +76,16 @@ public class SelectionBox_2D_3D : MonoBehaviour
 
                     //convert the position to screen point
                     //when using canvas screenspace - overlay - world pos is alraedy equals to screen point, so this conversion does nothing
-                    bl = RectTransformUtility.WorldToScreenPoint(GetScreenPointCamera(selectionBoxBoundRect), bl);
-                    tl = RectTransformUtility.WorldToScreenPoint(GetScreenPointCamera(selectionBoxBoundRect), tl);
-                    tr = RectTransformUtility.WorldToScreenPoint(GetScreenPointCamera(selectionBoxBoundRect), tr);
-                    br = RectTransformUtility.WorldToScreenPoint(GetScreenPointCamera(selectionBoxBoundRect), br);
+                    Camera c = GetScreenPointCamera(selectionBoxBoundRect);
+                    bl = RectTransformUtility.WorldToScreenPoint(c, bl);
+                    tl = RectTransformUtility.WorldToScreenPoint(c, tl);
+                    tr = RectTransformUtility.WorldToScreenPoint(c, tr);
+                    br = RectTransformUtility.WorldToScreenPoint(c, br);
 
                     //C onstruct ray from the camera using selectionBox Corner Pos
                     Ray bottomLeftRay = cam.ScreenPointToRay(bl);
-                    Ray topLeftRay  = cam.ScreenPointToRay(tl);
-                    Ray topRightRay  = cam.ScreenPointToRay(tr);
+                    Ray topLeftRay = cam.ScreenPointToRay(tl);
+                    Ray topRightRay = cam.ScreenPointToRay(tr);
                     Ray bottomRightRay = cam.ScreenPointToRay(br);
 
                     // Create Planes from Rays
@@ -93,7 +94,7 @@ public class SelectionBox_2D_3D : MonoBehaviour
                     planes[1].Set3Points(topLeftRay.origin, topRightRay.origin, topRightRay.GetPoint(raycastDistance)); // top
                     planes[2].Set3Points(topLeftRay.origin, topLeftRay.GetPoint(raycastDistance), bottomLeftRay.GetPoint(raycastDistance)); //left
                     planes[3].Set3Points(bottomLeftRay.origin, bottomLeftRay.GetPoint(raycastDistance), bottomRightRay.GetPoint(raycastDistance));//bottom
-                    planes[4].Set3Points(topRightRay.origin, bottomRightRay.GetPoint(raycastDistance), topRightRay .GetPoint(raycastDistance)); //right
+                    planes[4].Set3Points(topRightRay.origin, bottomRightRay.GetPoint(raycastDistance), topRightRay.GetPoint(raycastDistance)); //right
 
                     // Check each selectable Objects to see if their mesh bounds is within the Fustrum(Planes)
                     currentlySelectedObjects.Clear();
@@ -116,8 +117,8 @@ public class SelectionBox_2D_3D : MonoBehaviour
                         }
 
                         GeometryUtilityExtension.TestPlanesResults result = GeometryUtilityExtension.TestPlanesAABBInternalFast(planes, ref boundsMin, ref boundsMax, true);
-                        if (mouseDragDirection ==  SelectionBoxDragDirection.Left_To_Right && result == GeometryUtilityExtension.TestPlanesResults.Inside
-                            || mouseDragDirection ==  SelectionBoxDragDirection.Right_To_Left && result != GeometryUtilityExtension.TestPlanesResults.Outside)
+                        if (mouseDragDirection == SelectionBoxDragDirection.Left_To_Right && result == GeometryUtilityExtension.TestPlanesResults.Inside
+                            || mouseDragDirection == SelectionBoxDragDirection.Right_To_Left && result != GeometryUtilityExtension.TestPlanesResults.Outside)
                         {
                             currentlySelectedObjects.Add(selectable);
                         }
@@ -132,16 +133,18 @@ public class SelectionBox_2D_3D : MonoBehaviour
                         previousSelectedObjectCount = currentlySelectedObjects.Count;
                     }
                 }
-                // Select the first Object Using Raycast on mouse
+                // Select the first Object Using Raycast on mouse - not going to use input.mouse directly, instead calculate from selectionbox
                 else if (!selectionBoxSizeNotZero)
                 {
-                    if(currentlySelectedObjects.Count == 0)
+                    if (currentlySelectedObjects.Count == 0)
                     {
                         Vector3[] corners = new Vector3[4];
                         selectionBoxRT.GetWorldCorners(corners);//bl,tl,tr,br
-                        Vector2 startMousePos = (corners[0] + corners[2]) / 2;
+                        Vector2 centerRT = (corners[0] + corners[2]) / 2;
+                        Vector2 startMousePos = RectTransformUtility.WorldToScreenPoint(GetScreenPointCamera(selectionBoxBoundRect), centerRT);
+
                         RaycastHit hit = cam.GetFirstHitAtMouse(startMousePos, raycastDistance);
-                        if(hit.collider != null)
+                        if (hit.collider != null)
                         {
                             GameObject SelectedObject = hit.transform.gameObject;
 
@@ -172,14 +175,14 @@ public class SelectionBox_2D_3D : MonoBehaviour
             //Then we promote the rect we're checking to it's parent.
             rectCheck = rectTransform.parent;
 
-        } while (rootCanvas == null);
+        } while (rectCheck != null && rootCanvas == null);
 
         //Once we have found the root Canvas, we return a camera depending on it's render mode.
-        if(rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay)
+        if (rootCanvas.renderMode == RenderMode.ScreenSpaceOverlay)
         {
             return null;
         }
-        else if(rootCanvas.renderMode == RenderMode.ScreenSpaceCamera)
+        else if (rootCanvas.renderMode == RenderMode.ScreenSpaceCamera)
         {
             return rootCanvas.worldCamera ? rootCanvas.worldCamera : Camera.main;
         }
@@ -202,7 +205,7 @@ public class SelectionBox_2D_3D : MonoBehaviour
     /// <param name="raycastDist">The raycast distance used scan for objects</param>
     public void StartSelectionBox(Vector2 startMousePos, float raycastDist)
     {
-        if(!isSelecting)
+        if (!isSelecting)
         {
             //Obtain mouseposition relative to the selectionBoxBoundRect
             Vector2 uiMousePostion;
@@ -286,7 +289,7 @@ public class SelectionBox_2D_3D : MonoBehaviour
     /// </summary>
     public void ReleaseSelectionBox()
     {
-        if(isSelecting)
+        if (isSelecting)
         {
             ResetSelectionBox();
 
@@ -322,7 +325,7 @@ public class SelectionBox_2D_3D : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        if(debug)
+        if (debug)
         {
             if (selectionBoxRT)
             {
@@ -338,10 +341,11 @@ public class SelectionBox_2D_3D : MonoBehaviour
 
                 //convert the position to screen point
                 //when using canvas screenspace - overlay - world pos is alraedy equals to screen point, so this conversion does nothing
-                bl = RectTransformUtility.WorldToScreenPoint(GetScreenPointCamera(selectionBoxBoundRect), bl);
-                tl = RectTransformUtility.WorldToScreenPoint(GetScreenPointCamera(selectionBoxBoundRect), tl);
-                tr = RectTransformUtility.WorldToScreenPoint(GetScreenPointCamera(selectionBoxBoundRect), tr);
-                br = RectTransformUtility.WorldToScreenPoint(GetScreenPointCamera(selectionBoxBoundRect), br);
+                Camera c = GetScreenPointCamera(selectionBoxBoundRect);
+                bl = RectTransformUtility.WorldToScreenPoint(c, bl);
+                tl = RectTransformUtility.WorldToScreenPoint(c, tl);
+                tr = RectTransformUtility.WorldToScreenPoint(c, tr);
+                br = RectTransformUtility.WorldToScreenPoint(c, br);
 
                 Ray bottomLeft = cam.ScreenPointToRay(bl);
                 Ray topLeft = cam.ScreenPointToRay(tl);
