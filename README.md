@@ -23,14 +23,10 @@ Manages A SelectionBox UI To Select Objects Using Mesh.Bounds or Collider
 ## Implementation
 1. Set a list of selectable objects using SetSelectableObjects(list)
 2. Assign SelectionBoxUI and SelectionBoxArea
-
-
 3. Use StartSelectionBox(),UpdateSelectionBox() and ReleaseSelectionBox()
  
 ## License
 [MIT][L]
-
-
 
 [L]: https://github.com/frozonnorth/SelectionBox_2D_3D/blob/main/LICENSE
 [MB]: https://docs.unity3d.com/ScriptReference/Mesh-bounds.html
