@@ -1,8 +1,9 @@
 # SelectionBox_2D_3D
-Manages A SelectionBox UI To Select 3D Objects On Screen
+Manages A SelectionBox UI To Select Objects Using Mesh.Bounds or Collider
+- Controls a SelectionBox UI size and position
+- Restricts SelectionBox UI within bounds of another UI
  
 ## Features
-- Restrict SelectionBox within a choosen Rect area
 - Works in any Screen Resoulution
 - Works in any Canvas Rendering Mode - Overlay,Camera or WorldSpace
 - Able to select single objects on cursor position
