@@ -25,10 +25,10 @@ public class SelectionBox_2D_3D : MonoBehaviour
     RectTransform selectionBoxRT;
 
     //Private
-    MeshRenderer[] selectableObjects;
+    GameObject[] selectableObjects;
     float raycastDistance;
     Vector2 startMousePos_UI;
-    List<MeshRenderer> currentlySelectedObjects = new List<MeshRenderer>();
+    List<GameObject> currentlySelectedObjects = new List<GameObject>();
     Vector2 previousSelectionBoxRTSize;
     int previousSelectedObjectCount = 0;
 
@@ -40,8 +40,8 @@ public class SelectionBox_2D_3D : MonoBehaviour
     SelectionBoxDragDirection mouseDragDirection;
 
     //Events
-    public Action<List<MeshRenderer>> OnSelectionBoxSelectObjects;
-    public Action<MeshRenderer> OnSelectionPointObjectSelect;
+    public Action<List<GameObject>> OnSelectionBoxSelectObjects;
+    public Action<GameObject> OnSelectionPointObjectSelect;
     public Action OnSelectionBoxRelease;
 
     //Debug
@@ -50,7 +50,7 @@ public class SelectionBox_2D_3D : MonoBehaviour
     void Awake()
     {
         selectionBoxRT = selectionBox2DGO.GetComponent<RectTransform>();
-        //selectionBox2DGO.transform.SetParent(selectionBoxRT.transform);
+        selectionBox2DGO.transform.SetParent(selectionBoxRT.transform);
 
         ResetSelectionBox();
     }
@@ -97,7 +97,7 @@ public class SelectionBox_2D_3D : MonoBehaviour
 
                     // Check each selectable Objects to see if their mesh bounds is within the Fustrum(Planes)
                     currentlySelectedObjects.Clear();
-                    foreach (MeshRenderer selectable in selectableObjects)
+                    foreach (GameObject selectable in selectableObjects)
                     {
                         Vector3 boundsMin;
                         Vector3 boundsMax;
@@ -110,8 +110,9 @@ public class SelectionBox_2D_3D : MonoBehaviour
                         }
                         else
                         {
-                            boundsMin = selectable.bounds.min;
-                            boundsMax = selectable.bounds.max;
+                            MeshRenderer mesh = selectable.GetComponent<MeshRenderer>();
+                            boundsMin = mesh.bounds.min;
+                            boundsMax = mesh.bounds.max;
                         }
 
                         GeometryUtilityExtension.TestPlanesResults result = GeometryUtilityExtension.TestPlanesAABBInternalFast(planes, ref boundsMin, ref boundsMax, true);
@@ -142,7 +143,7 @@ public class SelectionBox_2D_3D : MonoBehaviour
                         RaycastHit hit = cam.GetFirstHitAtMouse(startMousePos, raycastDistance);
                         if(hit.collider != null)
                         {
-                            MeshRenderer SelectedObject = hit.transform.GetComponent<MeshRenderer>();
+                            GameObject SelectedObject = hit.transform.gameObject;
 
                             currentlySelectedObjects.Add(SelectedObject);
                             OnSelectionPointObjectSelect?.Invoke(SelectedObject);
@@ -192,7 +193,7 @@ public class SelectionBox_2D_3D : MonoBehaviour
     /// Set the List of Objects that user can select which ideally would only be objects visible by camera
     /// </summary>
     /// <param name="objects">List of Objects that user can select</param>
-    public void SetSelectableObjects(MeshRenderer[] objects) { selectableObjects = objects; }
+    public void SetSelectableObjects(GameObject[] objects) { selectableObjects = objects; }
 
     /// <summary>
     /// Call this first to init and start selection box

@@ -541,8 +541,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   selectionBox: {fileID: 2071044908}
   rayCastDist: 100
-  CubeA: {fileID: 1577975057}
-  CubeB: {fileID: 1883618609}
+  SelectableGO:
+  - {fileID: 1577975057}
+  - {fileID: 1883618609}
 --- !u!4 &1461595062
 Transform:
   m_ObjectHideFlags: 0

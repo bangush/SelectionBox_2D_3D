@@ -7,10 +7,9 @@ public class SelectionBox_2D_3D_Example : MonoBehaviour
     [SerializeField] SelectionBox_2D_3D selectionBox;
     [SerializeField] float rayCastDist = 100;
 
-    [SerializeField] GameObject CubeA;
-    [SerializeField] GameObject CubeB;
+    [SerializeField] List<GameObject> SelectableGO;
 
-    List<MeshRenderer> highlightedObjects = new List<MeshRenderer>();
+    List<GameObject> highlightedObjects = new List<GameObject>();
     void Awake()
     {
         selectionBox.OnSelectionBoxRelease = () => 
@@ -18,7 +17,7 @@ public class SelectionBox_2D_3D_Example : MonoBehaviour
             ChangeColor(highlightedObjects,Color.white);
             highlightedObjects.Clear();
         };
-        selectionBox.OnSelectionBoxSelectObjects = (List<MeshRenderer> SelectedObjects) => 
+        selectionBox.OnSelectionBoxSelectObjects = (List<GameObject> SelectedObjects) => 
         {
             ChangeColor(highlightedObjects, Color.white);
             highlightedObjects.Clear();
@@ -29,7 +28,7 @@ public class SelectionBox_2D_3D_Example : MonoBehaviour
 
             print($"You have selected {SelectedObjects.Count} Objects");
         };
-        selectionBox.OnSelectionPointObjectSelect = (MeshRenderer SelectedObject) => 
+        selectionBox.OnSelectionPointObjectSelect = (GameObject SelectedObject) => 
         {
             highlightedObjects.Add(SelectedObject);
 
@@ -38,10 +37,8 @@ public class SelectionBox_2D_3D_Example : MonoBehaviour
             print(SelectedObject.name);
         };
 
-        List<MeshRenderer> selectables = new List<MeshRenderer>();
-        if (CubeA) selectables.Add(CubeA.GetComponent<MeshRenderer>());
-        if (CubeB) selectables.Add(CubeB.GetComponent<MeshRenderer>());
-        selectionBox.SetSelectableObjects(selectables.ToArray());
+        List<GameObject> selectables = new List<GameObject>();
+        selectionBox.SetSelectableObjects(SelectableGO.ToArray());
     }
 
     void Update()
@@ -59,11 +56,11 @@ public class SelectionBox_2D_3D_Example : MonoBehaviour
             selectionBox.ReleaseSelectionBox();
         }
     }
-    void ChangeColor(List<MeshRenderer> meshes, Color color)
+    void ChangeColor(List<GameObject> gos, Color color)
     {
-        foreach(MeshRenderer meshRenderer in meshes)
+        foreach(GameObject go in gos)
         {
-            meshRenderer.material.color = color;
+            go.GetComponent<MeshRenderer>().material.color = color;
         }
     }
 }
